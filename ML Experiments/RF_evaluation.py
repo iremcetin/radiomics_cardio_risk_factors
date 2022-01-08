@@ -3,16 +3,14 @@
 Created on Mar 8 2019
 @author: Irem Cetin
 email : irem.cetin@upf.edu
+"""
 ################################################################################
-THIS SCRIPT IS FOR ANALYZING THE RISK FACTORS IN UK BIOBANK DAT
+Analysis with Random Forest
 Tested with Python 2.7 and Python 3.5 on Ubuntu Mate Release 16.04.5 LTS (Xenial Xerus) 64-bit
 ###############################################################################
 
 
 
-################################################################################
-
-"""
 
 '''
 IMPORT LIBRARIES
@@ -22,14 +20,12 @@ import pandas as pd
 import os
 from cvd_ids_in_ukbb_normal_pca import find_cvds_ukbb 
 #from analyze_plots_ukbb import *
-from sklearn.svm import SVC
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import StratifiedKFold
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 from scipy import interp
-from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier
 from mlxtend.plotting import plot_sequential_feature_selection as plot_sfs
 
@@ -96,31 +92,17 @@ def get_conventional_indices (convention, nor_df_training):
     conventional_indices_training_nor = convention.loc[convention['f.eid'].isin(nor_df_training['patient'])]
     conventional_indices_training_nor = conventional_indices_training_nor.set_index('f.eid')
     conventional_indices_training_nor = conventional_indices_training_nor.reindex(index = nor_df_training['patient'])
-#    conventional_indices_training_nor = conventional_indices_training_nor.reindex(index = nor_df_training.index)
-#    conventional_indices_testing_nor = convention.loc[convention['f.eid'].isin(nor_df.patient)]
-#    nor_df_training.sort_index(inplace=True)
-#    Labels_training_conv_nor = nor_df_training.values[:,-1]
-
-#Labels = Labels_.values()
     conventional_indices_training_nor=conventional_indices_training_nor.fillna(conventional_indices_training_nor.mean())
-#conventional_indices_testing=conventional_indices_testing.fillna(conventional_indices_testing.mean())
-
-
-#conventional_indices.reindex(radiomics_hypertension_cvds_df.index)
     conventional_indices_LV_training = conventional_indices_training_nor.filter(regex=( 'LV'))
     conventional_indices_LV_training =conventional_indices_LV_training.iloc[:,:-1]
-#    conventional_indices_LA_training = conventional_indices_training_nor.filter(regex=( 'LA'))
-#    conventional_indices_LA_training =conventional_indices_LA_training.iloc[:,:-1]
     conventional_indices_RV_training = conventional_indices_training_nor.filter(regex=('RV'))
     conventional_indices_RV_training =conventional_indices_RV_training.iloc[:,:-1]
-#    conventional_all_training_nor = pd.concat([conventional_indices_LV_training,conventional_indices_RV_training,\
-#                            conventional_indices_LA_training],axis=1)
     conventional_all_training_nor = pd.concat([conventional_indices_LV_training,conventional_indices_RV_training],axis=1)
     return conventional_all_training_nor
 
-file_feat=open('/home/irem/Desktop/ACDC_Test/Normal Analyze/conditions.txt')
+file_feat=open('.../conditions.txt')
 conditions=[]
-with open("/home/irem/Desktop/ACDC_Test/Normal Analyze/conditions.txt") as feat:
+with open(".../conditions.txt") as feat:
     for line in feat:
         f=line.strip()
         f=line.split(",")
@@ -129,18 +111,12 @@ with open("/home/irem/Desktop/ACDC_Test/Normal Analyze/conditions.txt") as feat:
             
             
             
-os.chdir("/home/irem/Desktop/ACDC_Test/Normal Analyze/Risk Factors_new conditions_even_cases/Diabetes_ML/")
-
-### INPUT FILES #### ##########################################################
+os.chdir(".../Risk Factors_new conditions_even_cases/Diabetes_ML/")
 
 ### Define Risk factors to analyze
-
-
 risk_factors =[
-#               ['angina'],
 #               ['high cholesterol'],
                ['diabetes'],
-#               ['asthma'],
 #               ['hypertension',\
 #               'essential hypertension']
            ]
@@ -155,16 +131,16 @@ models=[]
 #### Take the UKBB files ##########################################################################################
 #### these 3 files will be check for the cardiovascular diseases
 ## to find the samples 
-main_path_files = '/home/irem/Desktop/UKBB/UKBB Data Information/Files/'
+main_path_files = '.../Data Information/Files/'
 #1-
-conditions=pd.read_csv(main_path_files+'medical_conditions_decoded_headings_decoded_data_2017-May-17_1445_r4d.csv', low_memory=False)
+conditions=pd.read_csv(main_path_files+'medical_conditions_.csv', low_memory=False)
 #2-
-history=pd.read_csv(main_path_files+'health_and_medical_history_decoded_headings_decoded_data_2017-May-17_1445_r4d.csv', low_memory=False)
+history=pd.read_csv(main_path_files+'health_and_medical_history_.csv', low_memory=False)
 #3-
-outcomes=pd.read_csv(main_path_files+'health_related_outcomes_decoded_headings_decoded_data_2017-May-17_1445_r4d.csv', low_memory=False)
+outcomes=pd.read_csv(main_path_files+'health_related_outcomes_.csv', low_memory=False)
 ###
 
-#### Take the conventional clinical indices to make the comparison of the results #####################################
+#### Take the conventional clinical indices to make the comparison of the results 
 convention =pd.read_csv(main_path_files+'imaging_heart_mri_qmul_oxford_decoded_headings_decoded_data_2017-May-17_1445_r4d.csv', low_memory=False)
 ## Get genetics data (if needed)
 #genomics = pd.read_csv('genomics_decoded_headings_decoded_data_2017-May-17_1445_r4d.csv', low_memory=False)
@@ -172,28 +148,12 @@ convention =pd.read_csv(main_path_files+'imaging_heart_mri_qmul_oxford_decoded_h
 #genomics.drop(genomics.select_dtypes(['object']), inplace=True, axis=1)
 
 #### Take the calculated radiomics features
-radiomics_ukbb=pd.read_csv('/home/irem/Desktop/UKBB/Returned cardiac radiomics for Application 2964/1. Radiomics results calculated.csv', low_memory=False)
+radiomics_ukbb=pd.read_csv('.../cardiac radiomics for Application 2964/1. Radiomics results calculated.csv', low_memory=False)
 #### Define the paths for the figures
-#save_path_main='/home/irem/Desktop/ACDC_Test/Normal Analyze/Risk Factors/Even_cases_reproduce/'
-#path_angina =os.path.join(save_path_main, 'Angina/')
-#path_high_chol=os.path.join(save_path_main, 'High_chol/')
-#path_hypertension=os.path.join(save_path_main, 'Hypertension/')
-#path_diabetes=os.path.join(save_path_main, 'Diabetes/')
-#path_asthma=os.path.join(save_path_main, 'Asthma/')
-#paths =[path_angina, path_high_chol, path_diabetes, path_asthma, path_hypertension]
-#
-#
-#save_path_main_conv ='/home/irem/Desktop/ACDC_Test/Normal Analyze/Risk Factors/Even_cases_reproduce/Conventional_indices/'
-#path_angina_conv =os.path.join(save_path_main_conv, 'Angina/')
-#path_high_chol_conv=os.path.join(save_path_main_conv, 'High_chol/')
-#path_hypertension_conv=os.path.join(save_path_main_conv, 'Hypertension/')
-#path_diabetes_conv=os.path.join(save_path_main_conv, 'Diabetes/')
-#path_asthma_conv=os.path.join(save_path_main_conv, 'Asthma/')
-#
-#paths_conv =[path_angina_conv, path_high_chol_conv, path_diabetes_conv, path_asthma_conv,path_hypertension_conv]
+#save_path_main='.../Risk Factors/Even_cases_reproduce/'
 
 '''
-Define different classifiers
+Define different RF classifiers
 '''
 names = [ 
           'RF_n_est1_maxdepth3_maxfeat_auto_gini','RF_n_est1_maxdepth3_maxfeat_sqrt_gini',
@@ -280,19 +240,13 @@ acc_all=[]
 cases=[]
 models=[]
 models_conv=[]
-read_samples_path ='/home/irem/Desktop/ACDC_Test/Normal Analyze/Risk Factors_new conditions_even_cases/Results-Single_feat_Last/'
-path_to_save_roc='/home/irem/Desktop/ACDC_Test/Normal Analyze/Risk Factors_new conditions_even_cases/Diabetes_ML/RF/'
+read_samples_path ='.../Results-Single_feat_Last/'
+path_to_save_roc='.../Diabetes_ML/RF/'
 for i in range(len(risk_factors)):
 
     #### Define the set for each risk to analyze
     setA= risk_factors[i]
-    
-   
-#    rest_cvds_classify = cvds_classify
-#    rest_risk_factors = list(filter(lambda x: x not in setA,risk_factors ))
-    '''
-    Get the radiomics features for Normals and AFIB
-    '''            
+         
     # Find CVDs in UK Biobank data and add 'normal' cases as a new instance in the list, cvds_classify
 #    print('Analyzing %s in UK Biobank...'%(setA))
 #    [nor_df, setA_df, rest_cvds_classify] =find_cvds_ukbb(conditions,radiomics_ukbb, rest_cvds_classify, setA)
@@ -301,22 +255,16 @@ for i in range(len(risk_factors)):
     nor_conv=pd.read_csv(read_samples_path+'normal_%s_conv.csv'%setA[0])
     setA_conv =pd.read_csv(read_samples_path+'setA_df_%s_conv.csv'%setA[0])
 
-    ##### Count the number of samples for AFIB and Normals to check the number of cases
+    ##### Count the number of samples for risk factor and Normals to check the number of cases
     cvds_samples_all.append((setA, setA_df.shape[0], nor_df.shape[0]))
     ### Randomly select cases from control group
     label_nor=nor_df.iloc[:,-1]
     nor_df=nor_df.iloc[:,:-1] ### remove labels from the dataframe
-    #########################################
     label_setA=setA_df.iloc[:,-1]
-#    label_nor = nor_df.iloc[:len(label_setA),-1]
-#    label_nor = nor_df.iloc[:len(setA_df),-1]
     setA_df = setA_df.iloc[:,:-1]
-#    nor_df = nor_df.iloc[:len(setA_df),:-1]
-#    nor_df = nor_df.iloc[:len(setA_df),:-1]
     cvds_samples_random_selection.append((setA, setA_df.shape[0], setA_df, nor_df.shape[0], nor_df))
 
-#    feature_names = list(nor_df.columns.values)
-    
+    # Preprocessing
     scaler =MinMaxScaler(feature_range=(-1,1))
     df_all = pd.concat([nor_df,setA_df])
     cases.append((setA,df_all))
@@ -325,9 +273,6 @@ for i in range(len(risk_factors)):
     label_all=pd.concat([label_nor, label_setA])
     Labels=label_all.values
     for name, clf in zip(names, classifiers):
-#    
-
-
         sfs = SFS(clf, # Define feature selector
                k_features=(2,20), # define the number of features or the range 
                forward=True, 
@@ -336,7 +281,7 @@ for i in range(len(risk_factors)):
                scoring='accuracy', 
 #              n_jobs=-1,
                cv=10) ## Select the features using cv
-### use the training dataset for feature selection  ##############################  
+### use the training dataset for feature selection   
     
         sfs1 =sfs
         sfs1= sfs1.fit(Features_scl, Labels) 
@@ -440,7 +385,7 @@ for name, clf, j in zip(names, classifiers,range(len(models))):
         
          
 '''
-Count the number of selected features for each group of radiomics
+OUTPUT
 '''   
 for i in range(24,len(models)):
      print('%s'%models[i][0])
