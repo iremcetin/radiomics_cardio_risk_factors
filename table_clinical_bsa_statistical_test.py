@@ -54,7 +54,7 @@ print(risk_factors)
 #sample_save = '/home/irem/Desktop/ACDC_Test/Normal Analyze/Risk Factors_new conditions_even_cases/'    
 read_samples_path ='C:/Users/iremc/Downloads/Data/'
 
-gender_age=pd.read_csv('C:/Users/iremc/Desktop/ACDC_Test/Methods/UKB_5065_characteristics1.csv', low_memory=False)
+gender_age=pd.read_csv('.../UKB_5065_characteristics1.csv', low_memory=False)
 
 '''
 Create the set for CVD
@@ -68,22 +68,15 @@ for i in range(len(risk_factors)):
     
     setA= risk_factors[i]
     print('Running for %s'%setA[0])
-    
-    #            setA =''.join(setA_str)
-#    rest_cvds_classify=list(filter(lambda x: x not in setA,cvds_classify ))
-#    setA= risk_factors[i]
-    
+
     '''
     Read the cases for Risk factors and controls
     '''
     if (risk_factors[i][0]=='smoking_previous')==1 or (risk_factors[i][0]=='hypertension')==1:
-#         nor_df =pd.read_csv(read_samples_path+'normal_%s.csv'%setA[0])
          setA_df =pd.read_csv(read_samples_path+'setA_df_%s.csv'%setA[0])
          setA_conv = pd.read_csv(read_samples_path+'setA_df_%s_conv.csv'%setA[0])
     else:
-#        nor_df =pd.read_csv(read_samples_path+'normal_%s.csv'%setA[0])
         setA_df =pd.read_csv(read_samples_path+'setA_df_%s.csv'%setA[0])
-#        nor_conv = pd.read_csv(read_samples_path+'normal_%s_conv.csv'%setA[0])
         setA_conv = pd.read_csv(read_samples_path+'setA_df_%s_conv.csv'%setA[0])
         
     Height = setA_df['Height']
