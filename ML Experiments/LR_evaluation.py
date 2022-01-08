@@ -5,8 +5,8 @@ Created on Mar 8 2019
 email : irem.cetin@upf.edu
 """
 ################################################################################
-Analyze logistic regression with different hyperparameters
-Tested with Python 2.7 and Python 3.5 on Ubuntu Mate Release 16.04.5 LTS (Xenial Xerus) 64-bit
+#Analyze logistic regression with different hyperparameters
+#Tested with Python 2.7 and Python 3.5 on Ubuntu Mate Release 16.04.5 LTS (Xenial Xerus) 64-bit
 ###############################################################################
 
 #IMPORT LIBRARIES
