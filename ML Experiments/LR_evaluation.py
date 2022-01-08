@@ -3,20 +3,13 @@
 Created on Mar 8 2019
 @author: Irem Cetin
 email : irem.cetin@upf.edu
+"""
 ################################################################################
-THIS SCRIPT IS FOR ANALYZING THE RISK FACTORS IN UK BIOBANK DAT
+Analyze logistic regression with different hyperparameters
 Tested with Python 2.7 and Python 3.5 on Ubuntu Mate Release 16.04.5 LTS (Xenial Xerus) 64-bit
 ###############################################################################
 
-
-
-################################################################################
-
-"""
-
-'''
-IMPORT LIBRARIES
-'''
+#IMPORT LIBRARIES
 
 import numpy as np
 import pandas as pd
@@ -98,10 +91,7 @@ def get_conventional_indices (convention, nor_df_training):
     conventional_indices_training_nor = convention.loc[convention['f.eid'].isin(nor_df_training['patient'])]
     conventional_indices_training_nor = conventional_indices_training_nor.set_index('f.eid')
     conventional_indices_training_nor = conventional_indices_training_nor.reindex(index = nor_df_training['patient'])
-#    conventional_indices_training_nor = conventional_indices_training_nor.reindex(index = nor_df_training.index)
-#    conventional_indices_testing_nor = convention.loc[convention['f.eid'].isin(nor_df.patient)]
-#    nor_df_training.sort_index(inplace=True)
-#    Labels_training_conv_nor = nor_df_training.values[:,-1]
+
 
 #Labels = Labels_.values()
     conventional_indices_training_nor=conventional_indices_training_nor.fillna(conventional_indices_training_nor.mean())
@@ -211,11 +201,7 @@ classifiers = [
     LogisticRegression(penalty='l1', C=1,solver='liblinear', max_iter=200),
     LogisticRegression(penalty='l1', C=10,solver='liblinear', max_iter=200)
 
-
-#    RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
-#    ,    MLPClassifier(alpha=1),
-   ]
-     
+   
 cvds_samples_all=[] 
 cvds_samples_random_selection=[]
 cvd_classifier_acc=[]  
@@ -223,8 +209,8 @@ acc_all=[]
 cases=[]
 models=[]
 models_conv=[]
-read_samples_path ='/home/irem/Desktop/ACDC_Test/Normal Analyze/Risk Factors_new conditions_even_cases/Results-Single_feat_Last/'
-path_to_save_roc='/home/irem/Desktop/ACDC_Test/Normal Analyze/Risk Factors_new conditions_even_cases/Diabetes_ML/'
+read_samples_path ='.../Risk Factors_new conditions_even_cases/Results-Single_feat_Last/'
+path_to_save_roc='.../Risk Factors_new conditions_even_cases/Diabetes_ML/'
 for i in range(len(risk_factors)):
 
     #### Define the set for each risk to analyze
@@ -233,9 +219,7 @@ for i in range(len(risk_factors)):
    
 #    rest_cvds_classify = cvds_classify
 #    rest_risk_factors = list(filter(lambda x: x not in setA,risk_factors ))
-    '''
-    Get the radiomics features for Normals and AFIB
-    '''            
+           
     # Find CVDs in UK Biobank data and add 'normal' cases as a new instance in the list, cvds_classify
 #    print('Analyzing %s in UK Biobank...'%(setA))
 #    [nor_df, setA_df, rest_cvds_classify] =find_cvds_ukbb(conditions,radiomics_ukbb, rest_cvds_classify, setA)
@@ -244,22 +228,15 @@ for i in range(len(risk_factors)):
     nor_conv=pd.read_csv(read_samples_path+'normal_%s_conv.csv'%setA[0])
     setA_conv =pd.read_csv(read_samples_path+'setA_df_%s_conv.csv'%setA[0])
 
-    ##### Count the number of samples for AFIB and Normals to check the number of cases
+    ##### Count the number of samples for diabetes and Normals to check
     cvds_samples_all.append((setA, setA_df.shape[0], nor_df.shape[0]))
     ### Randomly select cases from control group
     label_nor=nor_df.iloc[:,-1]
     nor_df=nor_df.iloc[:,:-1] ### remove labels from the dataframe
     #########################################
     label_setA=setA_df.iloc[:,-1]
-#    label_nor = nor_df.iloc[:len(label_setA),-1]
-#    label_nor = nor_df.iloc[:len(setA_df),-1]
     setA_df = setA_df.iloc[:,:-1]
-#    nor_df = nor_df.iloc[:len(setA_df),:-1]
-#    nor_df = nor_df.iloc[:len(setA_df),:-1]
     cvds_samples_random_selection.append((setA, setA_df.shape[0], setA_df, nor_df.shape[0], nor_df))
-
-#    feature_names = list(nor_df.columns.values)
-    
     scaler =MinMaxScaler(feature_range=(-1,1))
     df_all = pd.concat([nor_df,setA_df])
     cases.append((setA,df_all))
@@ -268,9 +245,6 @@ for i in range(len(risk_factors)):
     label_all=pd.concat([label_nor, label_setA])
     Labels=label_all.values
     for name, clf in zip(names, classifiers):
-#    
-
-
         sfs = SFS(clf, # Define feature selector
                k_features=(2,20), # define the number of features or the range 
                forward=True, 
@@ -279,7 +253,7 @@ for i in range(len(risk_factors)):
                scoring='accuracy', 
 #              n_jobs=-1,
                cv=10) ## Select the features using cv
-### use the training dataset for feature selection  ##############################  
+        ### use the training dataset for feature selection  ##############################  
     
         sfs1 =sfs
         sfs1= sfs1.fit(Features_scl, Labels) 
@@ -316,15 +290,14 @@ for i in range(len(risk_factors)):
         Features_scl_conv= scaler.fit_transform(df_all_conv)
         sfs1_conv =sfs_conv
         sfs1_conv= sfs1_conv.fit(df_all_conv, label_all) 
-        '''
-        PLOT
-        '''
+        
+        #Plot
+        
         fig2 = plot_sfs(sfs1_conv.get_metric_dict(), kind='std_dev')
 
 
         plt.title('Feature Selection using %s (w. StdDev)'%name)
         plt.grid()
-#        plt.show()
         label_conv='conventional indices'
 #        title_name=name.replace(' ', '_')
         plt.savefig('SFS_PLOT_DIABETES_%s_%s.png'%(label_conv,name))
@@ -364,7 +337,7 @@ from numpy import newaxis
 from sklearn.model_selection import cross_validate
 for name, clf, j in zip(names, classifiers,range(len(models))):    
    
-        setA=risk_factors[0]
+        setA=risk_factors[0] # select diabetes patients
         feature_idx = models[j][4]
         cv_results_means = np.zeros((len(feature_idx),1))
         cv_results_means_wo = np.zeros((len(feature_idx),1))
@@ -382,9 +355,8 @@ for name, clf, j in zip(names, classifiers,range(len(models))):
             cv_results_means_wo[i]= cv_results_wo['test_score'].mean()
         
          
-'''
-Count the number of selected features for each group of radiomics
-'''   
+# Output #
+# Report the number of selected features for each group of radiomics   
 for i in range(len(models)):
      print('%s'%models[i][0])
      count_group_features = np.histogram(models[i][4], bins=[0,97,210,678,684,685,686])[0]    
